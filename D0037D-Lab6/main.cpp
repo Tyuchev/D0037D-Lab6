@@ -11,11 +11,14 @@ int main()
 {
 	std::cout << "Hello World" << std::endl;
 
+	//  1920 x 1080 
+	Game game{ Point2D{1920, 1080} };
 
-	// run sim here
+	game.Init();
 
-	//  1920 x 1080
+	game.Run();
 
+	game.Close();
 
 	return 0;
 }

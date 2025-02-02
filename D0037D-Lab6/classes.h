@@ -13,13 +13,40 @@ struct Point2D
 	Point2D() = delete;
 	Point2D(int posX, int posY);
 
+	Point2D operator / (int div) const
+	{
+		Point2D result{0,0};
+		result.x = x / div;
+		result.y = y / div;
+		return result;
+	}
+
+	Point2D operator + (Point2D& rhs) const
+	{
+		Point2D result{x + rhs.x, y + rhs.y};
+
+		return result;
+	}
+
 };
 
+
+class Sprite
+{
+public:
+
+	Sprite();
+
+};
 
 
 class Object
 {
-	Point2D pos;
+public:
+
+	Point2D m_Pos;
+	Sprite* m_Sprite;
+	
 
 	Object() = delete;
 	Object(Point2D position);
@@ -32,15 +59,24 @@ class Object
 
 class Player : Object
 {
+public:
 
-	// override Move(), Constructors
+	Player() = delete;
+	Player(Point2D position);
+
+	virtual void Move(Point2D moveVector) override;
+
 
 };
 
-class Obstruct : Object
+class Obstructor : Object
 {
+public:
 
+	Obstructor() = delete;
+	Obstructor(Point2D position);
 
+	virtual void Move(Point2D moveVector) override;
 
 
 };
