@@ -11,7 +11,7 @@
 
 
 Game::Game(Point2D screenDims)
-	: m_ScreenDims(screenDims), m_Centre(screenDims / 2)
+	: m_ScreenDims(screenDims), m_Centre(screenDims / 2), m_ShouldRunFlag(true)
 {
 }
 
@@ -28,7 +28,8 @@ void Game::Init()
 	m_Player = new Player(m_Centre);
 
 	// Create Obstructors
-	// Far Asteroids
+	// 
+	// 5 Far Asteroids
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -44,15 +45,18 @@ void Game::Init()
 
 		float relativeX = m_Centre.x * sinX;
 		float relativeY = m_Centre.y * sinY;
-		Point2D relativePos{int(relativeX), int(relativeY)};
+		Point2D relativePos{relativeX, relativeY};
+
+		// Start the asteroids moving towards the centre of the window (Player spawn)
+		Point2D velocity = Normalise(relativePos * -1); 
 
 		Point2D position = m_Centre + relativePos;
-		Obstructor asteroid{position};
+		Obstructor asteroid{position, velocity};
 
 		m_ObstructorList.push_back(asteroid);
 	}
 
-	// Near asteroids
+	// 5 Near asteroids
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -68,9 +72,12 @@ void Game::Init()
 		float sinX = sin(iSegment);
 		float sinY = cos(iSegment);
 
-		float relativeX = (float(m_Centre.x) / 2.0f) * sinX;
-		float relativeY = (float(m_Centre.y) / 2.0f) * sinY;
-		Point2D relativePos{ int(relativeX), int(relativeY) };
+		float relativeX = m_Centre.x / 2.0f * sinX;
+		float relativeY = m_Centre.y / 2.0f * sinY;
+		Point2D relativePos{ relativeX, relativeY };
+
+		// Start the asteroids moving towards the centre of the window (Player spawn)
+		Point2D velocity = Normalise(relativePos * -1);
 
 		Point2D position = m_Centre + relativePos;
 		Obstructor asteroid{ position };
@@ -81,10 +88,102 @@ void Game::Init()
 
 void Game::Run()
 {
+	while (m_ShouldRunFlag)
+	{
+		UpdateAll();
+		CollisionChecks();
 
+		if (true)
+		{
+			// Implement collation of frames
+			HandlePlayerInput();
+		}
+		
+	}
+	
 }
 
 void Game::Close()
 {
+	// Occurs when m_ShouldRunFlag is set to false
+}
 
+void Game::UpdateAll()
+{
+	for (auto& const obstructor : m_ObstructorList)
+	{
+		obstructor.Update();
+	}
+}
+
+void Game::HandlePlayerInput()
+{
+	m_Player->GetInput();
+}
+
+void Game::CollisionChecks()
+{
+	Point2D playerPos = m_Player->m_Pos;
+
+	for (auto& const obstructor : m_ObstructorList)
+	{
+		Point2D obstructPos = obstructor.m_Pos;
+		if (playerPos == obstructPos)
+		{
+			// Resolve collision
+			m_ShouldRunFlag = false;
+			return;
+		}
+
+	}
+
+	EdgeCheck();
+
+}
+
+void Game::EdgeCheck()
+{
+	std::vector<Object*> objectList;
+		
+	for (auto& const object : m_ObstructorList)
+	{
+		objectList.push_back(&object);
+	}
+	objectList.push_back(m_Player);
+
+
+	for (auto& const object : objectList)
+	{
+		Point2D objectPos = object->m_Pos;
+
+		if (objectPos.x > m_ScreenDims.x)
+		{
+			object->m_Pos.x = 0;
+
+		}
+		else if (objectPos.x < 0)
+		{
+			object->m_Pos.x = m_Centre.x * 2;
+		}
+
+		if (objectPos.y > m_ScreenDims.y)
+		{
+			object->m_Pos.y = 0;
+
+		}
+		else if (objectPos.y < 0)
+		{
+			object->m_Pos.y = m_Centre.y * 2;
+		}
+
+	}
+}
+
+Point2D Game::Normalise(Point2D point)
+{
+	float length = sqrt(point.x * point.x + point.y * point.y);
+
+	Point2D result{ point.x / length, point.y / length };
+
+	return result;
 }
